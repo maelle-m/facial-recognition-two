@@ -5,9 +5,9 @@ let faceProgress = []; // Array to track progress for each face
 let facePhase = []; // Array to track the phase for each face
 
 async function setup() {
-  createCanvas(windowWidth, windowHeight); // Fullscreen canvas
+  createCanvas(windowWidth, windowHeight);
   video = createCapture(VIDEO);
-  video.size(width, height); // Match video to canvas dimensions
+  video.size(width, height); // Match video size to canvas size
   video.hide();
 
   console.log("Loading TensorFlow...");
@@ -25,8 +25,7 @@ async function setup() {
 function draw() {
   background(0);
 
-  // Draw video feed to cover the canvas
-  tint(255, 100);
+  // Draw video feed
   image(video, 0, 0, width, height);
 
   // Process and render each detected face
@@ -153,7 +152,7 @@ function scalePoint(pt) {
   return createVector(x, y);
 }
 
-// Update canvas size on window resize
+// Ensure the canvas resizes with the device
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
   video.size(width, height);
