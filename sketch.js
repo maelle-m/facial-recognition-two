@@ -5,9 +5,17 @@ let faceProgress = []; // Array to track progress for each face
 let facePhase = []; // Array to track the phase for each face
 
 async function setup() {
-  createCanvas(windowWidth, windowHeight); // Set canvas to fill the screen
-  video = createCapture(VIDEO);
-  video.size(width, height); // Set video to match canvas
+  // Set canvas size for mobile dimensions
+  createCanvas(windowWidth, windowHeight);
+  noSmooth(); // Improve rendering on smaller screens
+
+  // Initialize webcam video input
+  video = createCapture({
+    video: {
+      facingMode: "user" // Use front-facing camera
+    }
+  });
+  video.size(windowWidth, windowHeight); // Match video to screen size
   video.hide();
 
   console.log("Loading TensorFlow...");
@@ -16,7 +24,7 @@ async function setup() {
   console.log("Loading model...");
   model = await faceLandmarksDetection.load(
     faceLandmarksDetection.SupportedPackages.mediapipeFacemesh,
-    { maxFaces: 5 } // Allow detection of up to 5 faces
+    { maxFaces: 5 }
   );
 
   console.log("Model loaded.");
@@ -36,9 +44,9 @@ function draw() {
   if (faces.length > 0) {
     faces.forEach((face, index) => {
       if (facePhase[index] < 3) {
-        drawFacialMesh(face, facePhase[index]);
+        drawFacialMesh(face);
       }
-      drawProgressOverlay(face, index);
+      drawProgressOverlay(index);
     });
   } else {
     resetAllProgress();
@@ -64,17 +72,17 @@ async function processFaces() {
 }
 
 // Draw the facial mesh for a specific face
-function drawFacialMesh(face, phase) {
-  if (phase === 2) return; // Do not draw the mesh in Phase 3
-
+function drawFacialMesh(face) {
   noFill();
-  stroke(0, 255, 128, 150); // Green wireframe color for earlier phases
+  stroke(0, 255, 128, 150);
   strokeWeight(0.5);
 
   for (let i = 0; i < face.scaledMesh.length - 1; i++) {
     let pt1 = scalePoint(face.scaledMesh[i]);
-    let pt2 = scalePoint(face.scaledMesh[i + 1]);
-    line(pt1.x, pt1.y, pt2.x, pt2.y);
+    if (i < face.scaledMesh.length - 1) {
+      let pt2 = scalePoint(face.scaledMesh[i + 1]);
+      line(pt1.x, pt1.y, pt2.x, pt2.y);
+    }
   }
 }
 
@@ -95,7 +103,7 @@ function resetAllProgress() {
 }
 
 // Draw the progress overlay for a specific face
-function drawProgressOverlay(face, index) {
+function drawProgressOverlay(index) {
   updateProgress(index);
 
   let phaseMessages = [
@@ -105,14 +113,14 @@ function drawProgressOverlay(face, index) {
   ];
 
   let phaseColors = [
-    color(0, 255, 128), // Green for "SCANNING FACE"
-    color(255, 255, 0), // Yellow for "GETTING DATA FROM DEVICE"
-    color(255) // White for "UPLOAD COMPLETE"
+    color(0, 255, 128),
+    color(255, 255, 0),
+    color(255)
   ];
 
-  let progressBarWidth = min(width, 300); // Adjust bar width dynamically
+  let progressBarWidth = min(width, 300);
   let barX = (width - progressBarWidth) / 2;
-  let barY = height - (50 + index * 40); // Stack bars for multiple faces
+  let barY = height - 60;
 
   if (facePhase[index] < 2) {
     fill(phaseColors[facePhase[index]]);
@@ -131,9 +139,7 @@ function drawProgressOverlay(face, index) {
     textSize(16);
     textAlign(CENTER);
     text(phaseMessages[2], width / 2, barY + 10);
-
-    // Remove mesh for this face
-    faces[index].scaledMesh = []; // Clear the mesh to stop rendering
+    faces[index].scaledMesh = [];
   }
 }
 
@@ -152,8 +158,8 @@ function scalePoint(pt) {
   return createVector(x, y);
 }
 
-// Adjust canvas and video size on window resize
+// Handle window resize
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
-  video.size(width, height);
+  video.size(windowWidth, windowHeight);
 }
