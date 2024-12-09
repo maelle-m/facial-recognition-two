@@ -5,13 +5,9 @@ let faceProgress = []; // Array to track progress for each face
 let facePhase = []; // Array to track the phase for each face
 
 async function setup() {
-  createCanvas(windowWidth, windowHeight); // Fullscreen canvas
-  video = createCapture({
-    video: {
-      facingMode: "user" // Use the front-facing camera for mobile devices
-    }
-  });
-  video.size(windowWidth, windowHeight); // Resize the video to match the canvas
+  createCanvas(windowWidth, windowHeight); // Set canvas to fill the screen
+  video = createCapture(VIDEO);
+  video.size(width, height); // Set video to match canvas
   video.hide();
 
   console.log("Loading TensorFlow...");
@@ -29,8 +25,7 @@ async function setup() {
 function draw() {
   background(0);
 
-  // Draw video feed faintly
-  tint(255, 100);
+  // Draw video feed
   image(video, 0, 0, width, height);
 
   // Process and render each detected face
@@ -104,18 +99,18 @@ function drawProgressOverlay(face, index) {
   updateProgress(index);
 
   let phaseMessages = [
-    "FACIAL DATA CAPTURED",
+    "SCANNING FACE...",
     "GETTING DATA FROM DEVICE...",
     "UPLOAD COMPLETE"
   ];
 
   let phaseColors = [
-    color(0, 255, 128), // Green for "FACIAL DATA CAPTURED"
+    color(0, 255, 128), // Green for "SCANNING FACE"
     color(255, 255, 0), // Yellow for "GETTING DATA FROM DEVICE"
     color(255) // White for "UPLOAD COMPLETE"
   ];
 
-  let progressBarWidth = 300;
+  let progressBarWidth = min(width, 300); // Adjust bar width dynamically
   let barX = (width - progressBarWidth) / 2;
   let barY = height - (50 + index * 40); // Stack bars for multiple faces
 
@@ -157,7 +152,8 @@ function scalePoint(pt) {
   return createVector(x, y);
 }
 
+// Adjust canvas and video size on window resize
 function windowResized() {
-  resizeCanvas(windowWidth, windowHeight); // Adjust canvas size on resize
-  video.size(windowWidth, windowHeight); // Match video to canvas size
+  resizeCanvas(windowWidth, windowHeight);
+  video.size(width, height);
 }
