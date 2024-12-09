@@ -3,11 +3,12 @@ let model; // Face landmarks model
 let faces = []; // Array to store detected faces
 let faceProgress = []; // Array to track progress for each face
 let facePhase = []; // Array to track the phase for each face
+let videoWidth = 640; // Default video width
+let videoHeight = 480; // Default video height
 
 async function setup() {
-  // Set canvas size for mobile dimensions
   createCanvas(windowWidth, windowHeight);
-  noSmooth(); // Improve rendering on smaller screens
+  noSmooth();
 
   // Initialize webcam video input
   video = createCapture({
@@ -15,7 +16,11 @@ async function setup() {
       facingMode: "user" // Use front-facing camera
     }
   });
-  video.size(windowWidth, windowHeight); // Match video to screen size
+
+  // Adjust video dimensions dynamically to match screen
+  video.size(windowWidth, (windowWidth * 3) / 4);
+  videoWidth = video.width;
+  videoHeight = video.height;
   video.hide();
 
   console.log("Loading TensorFlow...");
@@ -153,13 +158,15 @@ function drawNoFaceMessage() {
 
 // Convert facial points from video to canvas coordinates
 function scalePoint(pt) {
-  let x = map(pt[0], 0, video.width, 0, width);
-  let y = map(pt[1], 0, video.height, 0, height);
+  let x = map(pt[0], 0, videoWidth, 0, width);
+  let y = map(pt[1], 0, videoHeight, 0, height);
   return createVector(x, y);
 }
 
 // Handle window resize
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
-  video.size(windowWidth, windowHeight);
+  video.size(windowWidth, (windowWidth * 3) / 4);
+  videoWidth = video.width;
+  videoHeight = video.height;
 }
